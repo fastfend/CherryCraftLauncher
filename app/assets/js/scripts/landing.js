@@ -550,9 +550,10 @@ let proc
 // Is DiscordRPC enabled
 let hasRPC = false
 // Joined server regex
-const SERVER_JOINED_REGEX = /\[.+\]: \[CHAT\] [a-zA-Z0-9_]{1,16} joined the game/
-const GAME_JOINED_REGEX = /\[.+\]: Skipping bad option: lastServer:/
-const GAME_LAUNCH_REGEX = /^\[.+\]: MinecraftForge .+ Initialized$/
+// Change this if your server uses something different.
+const GAME_JOINED_REGEX = /\[.+\]: Sound engine started/
+const GAME_LAUNCH_REGEX = /^\[.+\]: (?:MinecraftForge .+ Initialized|ModLauncher .+ starting: .+)$/
+const MIN_LINGER = 5000
 
 let aEx
 let serv
@@ -732,19 +733,32 @@ function dlAsync(login = true){
                 let pb = new ProcessBuilder(serv, versionData, forgeData, authUser, remote.app.getVersion())
                 setLaunchDetails('Uruchamianie..')
 
+                // const SERVER_JOINED_REGEX = /\[.+\]: \[CHAT\] [a-zA-Z0-9_]{1,16} joined the game/
+                const SERVER_JOINED_REGEX = new RegExp(`\\[.+\\]: \\[CHAT\\] ${authUser.displayName} joined the game`)
+
+                const onLoadComplete = () => {
+                    toggleLaunchArea(false)
+                    if(hasRPC){
+                        DiscordWrapper.updateDetails('Loading game..')
+                    }
+                    proc.stdout.on('data', gameStateChange)
+                    proc.stdout.removeListener('data', tempListener)
+                    proc.stderr.removeListener('data', gameErrorListener)
+                }
+                const start = Date.now()
+
                 // Attach a temporary listener to the client output.
                 // Will wait for a certain bit of text meaning that
                 // the client application has started, and we can hide
                 // the progress bar stuff.
                 const tempListener = function(data){
                     if(GAME_LAUNCH_REGEX.test(data.trim())){
-                        toggleLaunchArea(false)
-                        if(hasRPC){
-                            DiscordWrapper.updateDetails('Ładowanie gry..')
+                        const diff = Date.now()-start
+                        if(diff < MIN_LINGER) {
+                            setTimeout(onLoadComplete, MIN_LINGER-diff)
+                        } else {
+                            onLoadComplete()
                         }
-                        proc.stdout.on('data', gameStateChange)
-                        proc.stdout.removeListener('data', tempListener)
-                        proc.stderr.removeListener('data', gameErrorListener)
                     }
                 }
 
@@ -1158,50 +1172,54 @@ function loadNews(){
         const distroData = DistroManager.getDistribution()
         const newsFeed = distroData.getRSS()
         const newsHost = new URL(newsFeed).origin + '/'
-        $.ajax(
-            {
-                url: newsFeed,
-                success: (data) => {
-                    const items = $(data).find('item')
-                    const articles = []
+        $.ajax({
+            url: newsFeed,
+            success: (data) => {
+                const items = $(data).find('item')
+                const articles = []
 
-                    for(let i=0; i<items.length; i++){
-                    // JQuery Element
-                        const el = $(items[i])
+                for(let i=0; i<items.length; i++){
+                // JQuery Element
+                    const el = $(items[i])
 
-                        // Resolve date.
-                        const date = new Date(el.find('pubDate').text()).toLocaleDateString('pl-PL', {day: 'numeric', month: 'short',  year: 'numeric'})
+                    // Resolve date.
+                    const date = new Date(el.find('pubDate').text()).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'})
 
-                        // Fix relative links in content.
-                        let content = el.find('description').text()
-                        let regex = /src="(?!http:\/\/|https:\/\/)(.+?)"/g
-                        //let matches
-                        //while((matches = regex.exec(content))){
-                        //    content = content.replace(`"${matches[1]}"`, `"${newsHost + matches[1]}"`)
-                        //}
+                    // Resolve comments.
+                    let comments = el.find('slash\\:comments').text() || '0'
+                    comments = comments + ' Comment' + (comments === '1' ? '' : 's')
 
-                        let link   = el.find('link').text()
-                        let title  = el.find('title').text()
-                        let author = el.find('dc\\:creator').text()
-
-                        // Generate article.
-                        articles.push(
-                            {
-                                link,
-                                title,
-                                date,
-                                author,
-                                content
-                            }
-                        )
+                    // Fix relative links in content.
+                    let content = el.find('content\\:encoded').text()
+                    let regex = /src="(?!http:\/\/|https:\/\/)(.+?)"/g
+                    let matches
+                    while((matches = regex.exec(content))){
+                        content = content.replace(`"${matches[1]}"`, `"${newsHost + matches[1]}"`)
                     }
-                    resolve({
-                        articles
-                    })
-                },
-                timeout: 2500
-            }
-        ).catch(err => {
+
+                    let link   = el.find('link').text()
+                    let title  = el.find('title').text()
+                    let author = el.find('dc\\:creator').text()
+
+                    // Generate article.
+                    articles.push(
+                        {
+                            link,
+                            title,
+                            date,
+                            author,
+                            content,
+                            comments,
+                            commentsLink: link + '#comments'
+                        }
+                    )
+                }
+                resolve({
+                    articles
+                })
+            },
+            timeout: 2500
+        }).catch(err => {
             resolve({
                 articles: null
             })

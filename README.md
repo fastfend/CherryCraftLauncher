@@ -80,7 +80,7 @@ If you want to export the console output, simply right click anywhere on the con
 
 **System Requirements**
 
-* [Node.js][nodejs] v12.x.x
+* [Node.js][nodejs] v12
 
 ---
 
@@ -136,28 +136,24 @@ Paste the following into `.vscode/launch.json`
       "name": "Debug Main Process",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceRoot}",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
-      },
-      "args": ["."],
-      "console": "integratedTerminal",
-      "protocol": "inspector"
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/electron/cli.js",
+      "args" : ["."],
+      "outputCapture": "std"
     },
     {
       "name": "Debug Renderer Process",
       "type": "chrome",
       "request": "launch",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
       "windows": {
-        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
       },
       "runtimeArgs": [
-        "${workspaceRoot}/.",
+        "${workspaceFolder}/.",
         "--remote-debugging-port=9222"
       ],
-      "webRoot": "${workspaceRoot}"
+      "webRoot": "${workspaceFolder}"
     }
   ]
 }
@@ -193,6 +189,8 @@ We reserve the right to update these conditions at any time, please check back p
 ## Resources
 
 * [Wiki][wiki]
+* [Nebula (Create Distribution.json)][nebula]
+* [v2 Rewrite Branch (WIP)][v2branch]
 
 The best way to contact the developers is on Discord.
 
@@ -210,3 +208,5 @@ The best way to contact the developers is on Discord.
 [chromedebugger]: https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome 'Debugger for Chrome'
 [discord]: https://discord.gg/zNWUXdt 'Discord'
 [wiki]: https://github.com/dscalzi/HeliosLauncher/wiki 'wiki'
+[nebula]: https://github.com/dscalzi/Nebula 'dscalzi/Nebula'
+[v2branch]: https://github.com/dscalzi/HeliosLauncher/tree/ts-refactor 'v2 branch'
