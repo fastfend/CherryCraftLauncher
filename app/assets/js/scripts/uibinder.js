@@ -109,9 +109,9 @@ function showFatalStartupError(){
         $('#loadingContainer').fadeOut(250, () => {
             document.getElementById('overlayContainer').style.background = 'none'
             setOverlayContent(
-                'Fatal Error: Unable to Load Distribution Index',
-                'A connection could not be established to our servers to download the distribution index. No local copies were available to load. <br><br>The distribution index is an essential file which provides the latest server information. The launcher is unable to start without it. Ensure you are connected to the internet and relaunch the application.',
-                'Close'
+                'Błąd krytyczny: Nie udało się pobrać pliku dystrybucji',
+                'Nie udało się podłączyć do serwera HQ. Brak lokalnego pliku dystrybucji <br><br>Bez pliku dystrybucji nie można uruchomić launchera. Upewnij się, że Twoje łącze internetowe działa i uruchom ponownie launcher.',
+                'Zamknij'
             )
             setOverlayHandler(() => {
                 const window = remote.getCurrentWindow()
@@ -318,15 +318,19 @@ async function validateSelectedAccount(){
     const selectedAcc = ConfigManager.getSelectedAccount()
     if(selectedAcc != null){
         const val = await AuthManager.validateSelected()
+        if(selectedAcc.offline)
+        {
+            val = true
+        }
         if(!val){
             ConfigManager.removeAuthAccount(selectedAcc.uuid)
             ConfigManager.save()
             const accLen = Object.keys(ConfigManager.getAuthAccounts()).length
             setOverlayContent(
-                'Failed to Refresh Login',
-                `We were unable to refresh the login for <strong>${selectedAcc.displayName}</strong>. Please ${accLen > 0 ? 'select another account or ' : ''} login again.`,
-                'Login',
-                'Select Another Account'
+                'Błąd podczas odświeżania',
+                `Nie udało się odświeżyć danych logowania <strong>${selectedAcc.displayName}</strong>. Proszę ${accLen > 0 ? 'wybrać inne konto lub ' : ''} zalogować się ponownie.`,
+                'Zaloguj',
+                'Wybierz inne konto'
             )
             setOverlayHandler(() => {
                 document.getElementById('loginUsername').value = selectedAcc.username
@@ -335,7 +339,7 @@ async function validateSelectedAccount(){
                 loginViewOnCancel = getCurrentView()
                 if(accLen > 0){
                     loginViewCancelHandler = () => {
-                        ConfigManager.addAuthAccount(selectedAcc.uuid, selectedAcc.accessToken, selectedAcc.username, selectedAcc.displayName)
+                        ConfigManager.addAuthAccount(selectedAcc.uuid, selectedAcc.accessToken, selectedAcc.username, selectedAcc.displayName, false)
                         ConfigManager.save()
                         validateSelectedAccount()
                     }

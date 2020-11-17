@@ -6,7 +6,7 @@ const logger = require('./loggerutil')('%c[ConfigManager]', 'color: #a02d2a; fon
 
 const sysRoot = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME)
 // TODO change
-const dataPath = path.join(sysRoot, '.westeroscraft')
+const dataPath = path.join(sysRoot, '.hqcraft')
 
 // Forked processes do not have access to electron, so we have this workaround.
 const launcherDir = process.env.CONFIG_DIRECT_PATH || require('electron').remote.app.getPath('userData')
@@ -76,17 +76,21 @@ const DEFAULT_CONFIG = {
             maxRAM: resolveMaxRAM(), // Dynamic
             executable: null,
             jvmOptions: [
-                '-XX:+UseConcMarkSweepGC',
-                '-XX:+CMSIncrementalMode',
-                '-XX:-UseAdaptiveSizePolicy',
+                '-XX:+UseG1GC',
+                '-Dsun.rmi.dgc.server.gcInterval=2147483646',
+                '-XX:+UnlockExperimentalVMOptions',
+                '-XX:G1NewSizePercent=20',
+                '-XX:G1ReservePercent=20',
+                '-XX:MaxGCPauseMillis=50',
+                '-XX:G1HeapRegionSize=32M',
                 '-Xmn128M'
             ],
         },
         game: {
             resWidth: 1280,
             resHeight: 720,
-            fullscreen: false,
-            autoConnect: true,
+            fullscreen: true,
+            autoConnect: false,
             launchDetached: true
         },
         launcher: {
@@ -337,16 +341,18 @@ exports.updateAuthAccount = function(uuid, accessToken){
  * @param {string} accessToken The accessToken of the authenticated account.
  * @param {string} username The username (usually email) of the authenticated account.
  * @param {string} displayName The in game name of the authenticated account.
+ * @param {string} nonpremium True if account is non premium.
  * 
  * @returns {Object} The authenticated account object created by this action.
  */
-exports.addAuthAccount = function(uuid, accessToken, username, displayName){
+exports.addAuthAccount = function(uuid, accessToken, username, displayName, nonpremium){
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         accessToken,
         username: username.trim(),
         uuid: uuid.trim(),
-        displayName: displayName.trim()
+        displayName: displayName.trim(),
+        offline: nonpremium
     }
     return config.authenticationDatabase[uuid]
 }

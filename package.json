@@ -1,14 +1,10 @@
 {
-  "name": "helioslauncher",
-  "version": "1.6.0",
-  "productName": "Helios Launcher",
-  "description": "Modded Minecraft Launcher",
-  "author": "Daniel Scalzi (https://github.com/dscalzi/)",
-  "license": "UNLICENSED",
-  "homepage": "https://github.com/dscalzi/HeliosLauncher",
-  "bugs": {
-    "url": "https://github.com/dscalzi/HeliosLauncher/issues"
-  },
+  "name": "hqcraftlauncher",
+  "version": "1.2.0",
+  "productName": "HQCraft Launcher",
+  "description": "Launcher paczki modów HQCraft",
+  "author": "Piotr Stadnicki (https://github.com/fastfend/)",
+  "license": "MIT",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -34,8 +30,11 @@
     "fs-extra": "^8.1.0",
     "github-syntax-dark": "^0.5.0",
     "jquery": "^3.4.1",
+    "mcquery": "^1.0.0",
     "request": "^2.88.0",
+    "request-progress": "^3.0.0",
     "semver": "^6.3.0",
+    "sudo-prompt": "^9.0.0",
     "tar-fs": "^2.0.0",
     "winreg": "^1.2.4"
   },
@@ -44,9 +43,5 @@
     "electron": "^6.0.10",
     "electron-builder": "^21.2.0",
     "eslint": "^6.4.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dscalzi/HeliosLauncher.git"
   }
 }

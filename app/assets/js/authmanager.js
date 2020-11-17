@@ -14,7 +14,7 @@ const LoggerUtil    = require('./loggerutil')
 const Mojang        = require('./mojang')
 const logger        = LoggerUtil('%c[AuthManager]', 'color: #a02d2a; font-weight: bold')
 const loggerSuccess = LoggerUtil('%c[AuthManager]', 'color: #209b07; font-weight: bold')
-
+const crypto        = require('crypto');
 // Functions
 
 /**
@@ -30,7 +30,7 @@ exports.addAccount = async function(username, password){
     try {
         const session = await Mojang.authenticate(username, password, ConfigManager.getClientToken())
         if(session.selectedProfile != null){
-            const ret = ConfigManager.addAuthAccount(session.selectedProfile.id, session.accessToken, username, session.selectedProfile.name)
+            const ret = ConfigManager.addAuthAccount(session.selectedProfile.id, session.accessToken, username, session.selectedProfile.name, false)
             if(ConfigManager.getClientToken() == null){
                 ConfigManager.setClientToken(session.clientToken)
             }
@@ -45,6 +45,45 @@ exports.addAccount = async function(username, password){
     }
 }
 
+
+
+function checkDec(n){return/^[0-9]{1,64}$/.test(n)}
+function checkHex(n){return/^[0-9A-Fa-f]{1,64}$/.test(n)}
+function Dec2Hex(n){if(!checkDec(n)||n<0)return 0;return n.toString(16)}
+function Hex2Dec(n){if(!checkHex(n))return 0;return parseInt(n,16).toString(10)}
+
+function generateUUID(username)
+{
+    var userid = "OfflinePlayer:" + username;
+    var baseuuid = crypto.createHash('md5').update(userid).digest("hex");
+
+    var mod_1 = Dec2Hex(Hex2Dec(baseuuid.substr(12,2)) & 15 | 48).toString()
+    var mod_2 = Dec2Hex(Hex2Dec(baseuuid.substr(16,2)) & 63 | 128).toString()
+
+    return baseuuid.substr(0,12) + mod_1 + baseuuid.substr(14,2) + mod_2 + baseuuid.substr(18,14);
+}
+
+
+
+/**
+ * Add an nonpremium account.
+ * 
+ * @param {string} username The account username (email if migrated).
+ * @returns {Promise.<Object>} Promise which resolves the resolved authenticated account object.
+ */
+exports.addNonpremiumAccount = async function(username){
+    try {
+        const uuid = generateUUID(username)
+        const ret = ConfigManager.addAuthAccount(uuid, uuid, username, username, true)
+        ConfigManager.save()
+        return ret
+        
+    } catch (err){
+        return Promise.reject(err)
+    }
+}
+
+
 /**
  * Remove an account. This will invalidate the access token associated
  * with the account and then remove it from the database.
@@ -52,10 +91,13 @@ exports.addAccount = async function(username, password){
  * @param {string} uuid The UUID of the account to be removed.
  * @returns {Promise.<void>} Promise which resolves to void when the action is complete.
  */
-exports.removeAccount = async function(uuid){
+exports.removeAccount = async function(uuid, offline){
     try {
-        const authAcc = ConfigManager.getAuthAccount(uuid)
-        await Mojang.invalidate(authAcc.accessToken, ConfigManager.getClientToken())
+        if(!offline)
+        {
+            const authAcc = ConfigManager.getAuthAccount(uuid)
+            await Mojang.invalidate(authAcc.accessToken, ConfigManager.getClientToken())
+        }
         ConfigManager.removeAuthAccount(uuid)
         ConfigManager.save()
         return Promise.resolve()

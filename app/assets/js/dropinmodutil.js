@@ -53,17 +53,17 @@ exports.scanForDropinMods = function(modsDir, version) {
                 })
             }
         }
-        for(let file of verCandidates){
-            const match = MOD_REGEX.exec(file)
-            if(match != null){
-                modsDiscovered.push({
-                    fullName: path.join(version, match[0]),
-                    name: match[1],
-                    ext: match[2],
-                    disabled: match[3] != null
-                })
-            }
-        }
+        // for(let file of verCandidates){
+        //     const match = MOD_REGEX.exec(file)
+        //     if(match != null){
+        //         modsDiscovered.push({
+        //             fullName: path.join(version, match[0]),
+        //             name: match[1],
+        //             ext: match[2],
+        //             disabled: match[3] != null
+        //         })
+        //     }
+        // }
     }
     return modsDiscovered
 }

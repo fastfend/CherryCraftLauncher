@@ -18,10 +18,10 @@ function getCurrentPlatform(){
 builder.build({
     targets: (process.argv[2] != null && Platform[process.argv[2]] != null ? Platform[process.argv[2]] : getCurrentPlatform()).createTarget(),
     config: {
-        appId: 'helioslauncher',
-        productName: 'Helios Launcher',
-        artifactName: '${productName}.${ext}',
-        copyright: 'Copyright © 2018-2019 Daniel Scalzi',
+        appId: 'hqcraftlauncher',
+        productName: 'HQCraft Launcher',
+        artifactName: 'hqcraftsetup-${os}-${version}-stable.${ext}',
+        copyright: 'Copyright © 2019 Piotr Stadnicki',
         directories: {
             buildResources: 'build',
             output: 'dist'
@@ -32,7 +32,13 @@ builder.build({
                     target: 'nsis',
                     arch: 'x64'
                 }
-            ]
+            ],
+            publish:
+            {
+                url: "https://updates.hqcraft.pl/update/${platform}",
+                provider: "generic",
+                channel: "stable"
+            }
         },
         nsis: {
             oneClick: false,
@@ -42,15 +48,27 @@ builder.build({
         },
         mac: {
             target: 'dmg',
-            category: 'public.app-category.games'
+            category: 'public.app-category.games',
+            publish:
+            {
+                url: "https://updates.hqcraft.pl/update/${platform}",
+                provider: "generic",
+                channel: "stable"
+            }
         },
         linux: {
             target: 'AppImage',
-            maintainer: 'Daniel Scalzi',
-            vendor: 'Daniel Scalzi',
-            synopsis: 'Modded Minecraft Launcher',
-            description: 'Custom launcher which allows users to join modded servers. All mods, configurations, and updates are handled automatically.',
-            category: 'Game'
+            maintainer: 'Piotr Stadnicki',
+            vendor: 'Piotr Stadnicki',
+            synopsis: 'Launcher paczki modów HQCraft',
+            description: 'Witaj w HQCraft',
+            category: 'Game',
+            publish:
+            {
+                url: "https://updates.hqcraft.pl/update/${platform}",
+                provider: "generic",
+                channel: "stable"
+            }
         },
         compression: 'maximum',
         files: [

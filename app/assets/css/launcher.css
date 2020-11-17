@@ -8,13 +8,13 @@
  ******************************************************************************/
 
 @font-face {
-    font-family: 'Avenir Book';
-    src: url('../fonts/Avenir-Book.ttf');
+    font-family: 'FontLight';
+    src: url('../fonts/Nunito-Light.ttf');
 }
 
 @font-face {
-    font-family: 'Avenir Medium';
-    src: url('../fonts/Avenir-Medium.ttf');
+    font-family: 'FontMedium';
+    src: url('../fonts/Nunito-Regular.ttf');
 }
 
 @font-face {
@@ -42,7 +42,7 @@ p {
 
 /* Set default font and color. */
 body, button {
-    font-family: 'Avenir Book';
+    font-family: 'FontLight';
     color: white;
 }
 
@@ -110,7 +110,7 @@ body, button {
 }
 #frameTitleText {
     font-size: 14px;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     letter-spacing: 0.5px;
 }
 
@@ -272,18 +272,12 @@ body, button {
 */
 
 #welcomeImageSeal {
-    border-radius: 50%;
-    border: 2px solid #cad7e1;
-    background: rgba(1, 2, 1, 0.5);
-    height: 125px;
-    width: 125px;
-    box-shadow: 0px 0px 10px 0px rgb(0, 0, 0);
     margin-bottom: 5%;
     margin-top: 10%;
 }
 
 #welcomeHeader {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     text-align: center;
     color: white;
     margin-bottom: 25px;
@@ -485,20 +479,15 @@ body, button {
 
 /* Logo on login form. */
 #loginImageSeal {
-    border-radius: 50%;
-    border: 2px solid #cad7e1;
-    background: rgba(1, 2, 1, 0.5);
-    height: 125px;
-    width: 125px;
-    box-shadow: 0px 0px 10px 0px rgb(0, 0, 0);
+    height: 70px;
     margin-bottom: 20px;
 }
 
 /* Header on login view. */
 #loginSubheader {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     margin-bottom: 25px;
-    font-size: 12px;
+    font-size: 20px;
     letter-spacing: 1px;
     font-weight: bold;
 }
@@ -521,14 +510,14 @@ body, button {
 
 /* Span which displays errors related to login field content. */
 .loginErrorSpan {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-weight: bold;
-    font-size: 8px;
+    font-size: 12px;
     color: #ff1b0c;
     width: 100%;
     text-align: right;
     position: absolute;
-    top: 7px;
+    top: 0px;
     opacity: 0;
     transition: 0.25s ease;
 }
@@ -557,7 +546,7 @@ body, button {
 
 /* Login text input styles. */
 .loginField {
-    font-family: 'Avenir Book';
+    font-family: 'FontLight';
     background: none;
     border-width: 1.5px 0px 0px 0px;
     border-style: solid;
@@ -569,7 +558,7 @@ body, button {
     text-align: center;
     box-sizing: border-box;
     padding: 7.5px;
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 1px;
 }
 .loginField:focus {
@@ -580,7 +569,7 @@ body, button {
 }
 .loginField::-webkit-input-placeholder {
     color: rgba(255, 255, 255, 0.75);
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 1px;
     text-align: center;
     font-weight: bold;
@@ -923,7 +912,7 @@ body, button {
     justify-content: center;
 }
 #settingsNavHeaderText {
-    font-size: 20px;
+    font-size: 30px;
 }
 
 /* Navigation items outer container. */
@@ -947,6 +936,7 @@ body, button {
     background: none;
     border: none;
     text-align: left;
+    font-size: 20px;
     margin: 5px 0px;
     padding: 0px 20px;
     color: grey;
@@ -978,7 +968,7 @@ body, button {
 
 /* Settings navigational divider. */
 .settingsNavDivider {
-    width: 75%;
+    width: 82%;
     height: 1px;
     background: rgba(126, 126, 126, 0.57);
     margin-left: auto;
@@ -995,6 +985,7 @@ body, button {
     color: white;
     cursor: pointer;
     outline: none;
+    font-size: 17px;
     transition: 0.25s ease;
 }
 #settingsNavDone:hover,
@@ -1052,10 +1043,10 @@ body, button {
 }
 .settingsTabHeaderText {
     font-size: 20px;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
 }
 .settingsTabHeaderDesc {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* Remove spin button from number inputs. */
@@ -1070,7 +1061,7 @@ body, button {
     background: rgba(0, 0, 0, 0.25);
     border-radius: 3px;
     border: 1px solid rgba(126, 126, 126, 0.57);
-    font-family: 'Avenir Book';
+    font-family: 'FontLight';
     transition: 0.25s ease;
 }
 #settingsContainer input[type=number]:focus,
@@ -1098,12 +1089,12 @@ body, button {
     flex-direction: column;
 }
 .settingsFieldTitle {
-    font-size: 14px;
-    font-family: 'Avenir Medium';
+    font-size: 18px;
+    font-family: 'FontMedium';
     color: rgba(255, 255, 255, 0.95);
 }
 .settingsFieldDesc {
-    font-size: 12px;
+    font-size: 14px;
     color: rgba(255, 255, 255, .95);
     margin-top: 5px;
 }
@@ -1264,13 +1255,13 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Description for the file selector. */
 .settingsFileSelDesc {
-    font-size: 10px;
+    font-size: 14px;
     margin: 20px 0px;
     color: lightgrey;
     width: 89%;
 }
 .settingsFileSelDesc strong {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
 }
 
 /* * *
@@ -1358,7 +1349,7 @@ input:checked + .toggleSwitchSlider:before {
     font-size: 12px;
     color: grey;
     font-weight: bold;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
 }
 .settingsAuthAccountDetailValue {
     font-size: 14px;
@@ -1380,7 +1371,7 @@ input:checked + .toggleSwitchSlider:before {
     border: none;
     white-space: nowrap;
     background: none;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     outline: none;
     transition: 0.25s ease;
 }
@@ -1403,9 +1394,9 @@ input:checked + .toggleSwitchSlider:before {
     border: 1px solid rgb(241, 55, 55);
     color: rgb(241, 55, 55);
     background: none;
-    font-size: 12px;
-    border-radius: 3px;
-    font-family: 'Avenir Medium';
+    font-size: 16px;
+    border-radius: 5px;
+    font-family: 'FontMedium';
     transition: 0.25s ease;
     cursor: pointer;
     outline: none;
@@ -1489,7 +1480,7 @@ input:checked + .toggleSwitchSlider:before {
     background: none;
     font-size: 12px;
     border-radius: 3px;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     transition: 0.25s ease;
     cursor: pointer;
     outline: none;
@@ -1532,7 +1523,7 @@ input:checked + .toggleSwitchSlider:before {
 #settingsReqModsContent,
 #settingsOptModsContent,
 #settingsDropinModsContent {
-    font-size: 12px;
+    font-size: 15px;
     background: rgba(0, 0, 0, 0.25);
     border-radius: 3px;
     color: white;
@@ -1582,7 +1573,7 @@ input:checked + .toggleSwitchSlider:before {
 /* The version of the mod. */
 .settingsModVersion {
     color: grey;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 /* Disabled toggleswitch for required mods. */
@@ -1887,7 +1878,7 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Description for memory management. */
 #settingsMemoryDesc {
-    font-size: 10px;
+    font-size: 14px;
     margin: 20px 0px;
     color: lightgrey;
     font-weight: bold;
@@ -1929,7 +1920,7 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Description for the JVM options setting. */
 #settingsJVMOptsDesc {
-    font-size: 10px;
+    font-size: 14px;
     margin: 20px 0px;
     color: lightgrey;
     font-weight: bold;
@@ -1975,7 +1966,6 @@ input:checked + .toggleSwitchSlider:before {
     border-bottom: 1px solid rgba(126, 126, 126, 0.57);
 }
 #settingsAboutLogo {
-    width: 30px;
     height: 30px;
     padding: 5px;
 }
@@ -2013,7 +2003,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Release type text. */
 #settingsAboutCurrentVersionTitle {
     font-size: 12px;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     color: #23aa23;
     font-weight: bold;
 }
@@ -2102,7 +2092,7 @@ input:checked + .toggleSwitchSlider:before {
     background-color: rgba(255, 255, 255, 0.25);
     color: white;
     border-radius: 3px;
-    font-family: 'Avenir Book';
+    font-family: 'FontLight';
 }
 .settingsChangelogText li+li {
     margin-top: .25em;
@@ -2212,7 +2202,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Release type text. */
 #settingsUpdateVersionTitle {
     font-size: 12px;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     color: #23aa23;
     font-weight: bold;
 }
@@ -2245,8 +2235,7 @@ input:checked + .toggleSwitchSlider:before {
     text-align: left;
     transition: 0.25s ease;
 }
-#settingsUpdateActionButton:hover,
-#settingsUpdateActionButton:focus {
+#settingsUpdateActionButton:hover {
     text-shadow: 0px 0px 20px white, 0px 0px 20px white, 0px 0px 20px white;
 }
 #settingsUpdateActionButton:active {
@@ -2315,8 +2304,7 @@ input:checked + .toggleSwitchSlider:before {
     position: relative;
     top: 25px;
     display: inline-flex;
-    line-height: 24px;
-    left: 50px;
+    line-height: 37px;
 }
 #landingContainer > #lower > #center {
     position: relative;
@@ -2411,15 +2399,14 @@ input:checked + .toggleSwitchSlider:before {
 #newsArticleTitle {
     font-size: 18px;
     font-weight: bold;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     color: white;
     text-decoration: none;
     transition: 0.25s ease;
     outline: none;
     text-align: right;
 }
-#newsArticleTitle:hover,
-#newsArticleTitle:focus {
+#newsArticleTitle:hover {
     text-shadow: 0px 0px 20px white;
 }
 #newsArticleTitle:active {
@@ -2480,6 +2467,10 @@ input:checked + .toggleSwitchSlider:before {
 #newsArticleComments:active {
     color: #c7c7c7;
 }
+#newsArticleContentWrapper p {
+    padding-top: 20px;
+}
+
 
 /* Article content container (right). */
 #newsArticleContainer {
@@ -2490,7 +2481,7 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Article content styles. */
 #newsArticleContentScrollable {
-    font-size: 12px;
+    font-size: 16px;
     overflow-y: scroll;
     height: 100%;
     padding: 0px 15px 0px 15px;
@@ -2506,8 +2497,7 @@ input:checked + .toggleSwitchSlider:before {
     transition: 0.25s ease;
     outline: none;
 }
-#newsArticleContentScrollable a:hover,
-#newsArticleContentScrollable a:focus {
+#newsArticleContentScrollable a:hover {
     color: rgba(255, 255, 255, 0.75);
 }
 #newsArticleContentScrollable a:active {
@@ -2534,8 +2524,7 @@ input:checked + .toggleSwitchSlider:before {
     border-bottom: 1px solid white;
     padding-bottom: 15px;
 }
-.bbCodeSpoilerButton:hover,
-.bbCodeSpoilerButton:focus {
+.bbCodeSpoilerButton:hover {
     text-shadow: 0px 0px 20px #ffffff, 0px 0px 20px #ffffff, 0px 0px 20px #ffffff;
 }
 .bbCodeSpoilerButton:active {
@@ -2576,7 +2565,7 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Navigation status span. */
 #newsNavigationStatus {
-    font-size: 12px;
+    font-size: 16px;
     margin: 0px 15px;
 }
 
@@ -2589,10 +2578,8 @@ input:checked + .toggleSwitchSlider:before {
     height: 20px;
     cursor: pointer;
 }
-#newsNavigateLeft:hover #newsNavigationLeftSVG,
-#newsNavigateLeft:focus #newsNavigationLeftSVG,
-#newsNavigateRight:hover #newsNavigationRightSVG,
-#newsNavigateRight:focus #newsNavigationRightSVG {
+#newsNavigateLeft:hover #newsNavigationLeftSVG
+#newsNavigateRight:hover #newsNavigationRightSVG {
     -webkit-filter: drop-shadow(0px 0px 2px #fff);
 }
 #newsNavigateLeft:active #newsNavigationLeftSVG .arrowLine,
@@ -2637,7 +2624,6 @@ input:checked + .toggleSwitchSlider:before {
 }
 #newsErrorLoading {
     display: flex;
-    width: 168.92px;
 }
 #nELoadSpan {
     white-space: pre;
@@ -2652,7 +2638,7 @@ input:checked + .toggleSwitchSlider:before {
     outline: none;
     transition: 0.25s ease;
 }
-#newsErrorRetry:focus,
+
 #newsErrorRetry:hover {
     text-shadow: 0px 0px 20px white;
 }
@@ -2676,9 +2662,7 @@ input:checked + .toggleSwitchSlider:before {
     height: 70px;
     width: auto;
     position: relative;
-    border: 2px solid white;
     box-sizing: border-box;
-    border-radius: 50%;
 }
 
 /* Logo container styles. */
@@ -2694,19 +2678,17 @@ input:checked + .toggleSwitchSlider:before {
 #image_seal_container[update]{
     cursor: pointer
 }
-#image_seal_container[update]:before,
-#image_seal_container[update]:after {
+#image_seal_container[update]:before {
     cursor: pointer;
     position: absolute;
     content: '';
-    height: 100%;
-    width: 100%;
-    top: 0%;
-    left: 0%;
-    border-radius: 50%;
-    box-shadow: 0 0 15px #43c628;
-    animation: glow-grow 4s ease-out infinite;
-    background: rgba(0, 0, 0, 0.15);
+    height: 40px;
+    width: 250px;
+    top: 18px;
+    left: 62px;
+    animation: glow-grow 2s ease-out infinite;
+    background: #257db1ba;
+    filter: blur(15px);
 }
 #image_seal_container[update]:before {
     animation-delay: 2s;
@@ -2718,7 +2700,6 @@ input:checked + .toggleSwitchSlider:before {
     visibility: hidden;
     opacity: 0;
     width: 100px;
-    height: 15px;
     background-color: rgb(0, 0, 0);
     color: #fff;
     text-align: center;
@@ -2727,8 +2708,8 @@ input:checked + .toggleSwitchSlider:before {
     position: absolute;
     z-index: 1;
     top: 115%;
-    left: -17.5px;
-    font-family: 'Avenir Medium';
+    left: 137.5px;
+    font-family: 'FontMedium';
     font-size: 12px;
     transition: visibility 0s linear 0.25s, opacity 0.25s ease;
 }
@@ -2788,13 +2769,13 @@ input:checked + .toggleSwitchSlider:before {
 
 /* User profile avatar container. */
 #avatarContainer {
-    border-radius: 50%;
-    border: 2px solid #cad7e1;
+    border-radius: 10px;
+    border: 2px solid #e6e6e6;
     box-sizing: border-box;
     background: rgba(1, 2, 1, 0.5);
     height: 70px;
     width: 70px;
-    box-shadow: 0px 0px 10px 0px rgb(0, 0, 0);
+    box-shadow: inset 0px 0px 13px 0px rgb(0, 0, 0);
     overflow: hidden;
     position: relative;
     background-position: center;
@@ -2821,8 +2802,7 @@ input:checked + .toggleSwitchSlider:before {
     height: 100%;
     border-radius: 50%;
 }
-#avatarOverlay:hover,
-#avatarOverlay:focus {
+#avatarOverlay:hover {
     opacity: 1;
 }
 #avatarOverlay:active {
@@ -2831,11 +2811,11 @@ input:checked + .toggleSwitchSlider:before {
 
 /* User profile name text. */
 #user_text {
-    font-size: 12px;
+    font-size: 16px;
     min-width: 135px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: 1px;
-    text-shadow: 0px 0px 20px black;
+    text-shadow: 0px 0px 10px black;
     position: absolute;
     right: 95px;
     text-align: right;
@@ -2999,10 +2979,10 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Style for a general label on the bottom of the landing view. */
 .bot_label {
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 1px;
     font-weight: bold;
-    text-shadow: 0px 0px 0px #bebcbb;
+    text-shadow: 0px 0px 10px #000000;
 }
 
 /* Divider used on the bottom of the landing view. */
@@ -3027,7 +3007,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Span which displays the player count of the selected server. */
 #player_count {
     color: #949494;
-    font-size: 8px;
+    font-size: 12px;
     font-weight: 900;
     text-shadow: 0px 0px 20px #949494;
     margin-left: 10px;
@@ -3060,7 +3040,7 @@ input:checked + .toggleSwitchSlider:before {
     border-radius: 4px;
     padding: 5px 10px;
     z-index: 1;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-size: 12px;
     transition: visibility 0s linear 0.25s, opacity 0.25s ease;
     bottom: calc(100% + 15px);
@@ -3147,8 +3127,7 @@ input:checked + .toggleSwitchSlider:before {
     cursor: pointer;
     outline: none;
 }
-#newsButton:hover #newsButtonText,
-#newsButton:focus #newsButtonText {
+#newsButton:hover #newsButtonText {
     text-shadow: 0px 0px 20px #fff, 0px 0px 20px #fff;
 }
 #newsButton:active {
@@ -3156,8 +3135,7 @@ input:checked + .toggleSwitchSlider:before {
     text-shadow: 0px 0px 20px #c7c7c7, 0px 0px 20px #c7c7c7;
 }
 
-#newsButton:hover #newsButtonSVG,
-#newsButton:focus #newsButtonSVG {
+#newsButton:hover #newsButtonSVG {
     -webkit-filter: drop-shadow(0px 0px 2px #fff);
 }
 #newsButton:active #newsButtonSVG .arrowLine {
@@ -3194,8 +3172,8 @@ input:checked + .toggleSwitchSlider:before {
     font-weight: 900;
     letter-spacing: 2px;
     text-shadow: 0px 0px 0px #bebcbb;
-    font-size: 11px;
-    line-height: 30px;
+    font-size: 16px;
+    line-height: 40px;
     display: flex;
     transition: 0.25s ease;
 }
@@ -3375,7 +3353,7 @@ input:checked + .toggleSwitchSlider:before {
 
 /* Overlay title styles. */
 #overlayTitle {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-size: 20px;
     font-weight: bold;
     letter-spacing: 1px;
@@ -3399,12 +3377,13 @@ input:checked + .toggleSwitchSlider:before {
 /* Overlay acknowledge button styles. */
 #overlayAcknowledge {
     background: none;
-    border: 1px solid #ffffff;
+    border: 2px solid #ffffff;
     color: white;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-weight: bold;
-    border-radius: 2px;
-    padding: 0px 8.1px;
+    font-size: 20px;
+    border-radius: 20px;
+    padding: 0px 12px;
     cursor: pointer;
     transition: 0.25s ease;
 }
@@ -3421,7 +3400,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Overlay dismiss option styles. */
 #overlayDismiss {
     font-weight: bold;
-    font-size: 10px;
+    font-size: 15px;
     text-decoration: none;
     padding-top: 2.5px;
     background: none;
@@ -3453,7 +3432,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Server selection header. */
 #serverSelectHeader,
 #accountSelectHeader {
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-size: 20px;
     font-weight: bold;
     color: #fff;
@@ -3495,8 +3474,8 @@ input:checked + .toggleSwitchSlider:before {
 .serverListing {
     border: none;
     padding: 0px;
-    width: 375px;
-    min-height: 60px;
+    width: 425px;
+    min-height: 80px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -3566,8 +3545,8 @@ input:checked + .toggleSwitchSlider:before {
 .serverListingImg {
     margin: 0px 10px 0px 5px;
     border: 1px solid #fff;
-    height: 50px;
-    width: 50px;
+    height: 70px;
+    width: 70px;
 }
 
 /* Content container for the server listing's details. */
@@ -3581,19 +3560,20 @@ input:checked + .toggleSwitchSlider:before {
 
 /* The name of the server listing. */
 .serverListingName {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
 }
 
 /* Description for the server listing. */
 .serverListingDescription {
-    font-size: 10px;
+    font-size: 11px;
     line-height: 10px;
     font-weight: bold;
 }
 
 /* Content container for the server listing's information. */
 .serverListingInfo {
+    margin-top: 7px;
     width: 100%;
     display: flex;
     justify-content: flex-start;
@@ -3601,24 +3581,24 @@ input:checked + .toggleSwitchSlider:before {
 
 /* The minecraft version of the server listing. */
 .serverListingVersion {
-    font-size: 10px;
+    font-size: 12px;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     line-height: 12px;
     height: 12px;
-    border-radius: 2px;
+    border-radius: 4px;
     background: rgba(31, 140, 11, 0.8);
-    padding: 0px 2px;
+    padding: 2px 2px;
 }
 
 /* The revision version of the server's manifest. */
 .serverListingRevision {
     color: #969696;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 12px;
-    padding: 0px 5px;
+    padding: 2px 5px;
 }
 
 /* Star which indicates the default (main) server. */
@@ -3628,6 +3608,7 @@ input:checked + .toggleSwitchSlider:before {
     cursor: pointer;
     height: 12px;
     position: relative;
+    padding: 2px 0px;
 }
 /* Tooltip which displays when hovering over the star. */
 .serverListingStarTooltip {
@@ -3673,12 +3654,13 @@ input:checked + .toggleSwitchSlider:before {
 #serverSelectConfirm,
 #accountSelectConfirm {
     background: none;
-    border: 1px solid #ffffff;
+    border: 2px solid #ffffff;
     color: white;
-    font-family: 'Avenir Medium';
+    font-family: 'FontMedium';
     font-weight: bold;
-    border-radius: 2px;
-    padding: 0px 8.1px;
+    font-size: 23px;
+    border-radius: 20px;
+    padding: 0px 9px;
     cursor: pointer;
     transition: 0.25s ease;
     min-height: 20.67px;
@@ -3700,9 +3682,9 @@ input:checked + .toggleSwitchSlider:before {
 #serverSelectCancel,
 #accountSelectCancel {
     font-weight: bold;
-    font-size: 10px;
+    font-size: 15px;
     text-decoration: none;
-    padding-top: 2.5px;
+    padding-top: 5px;
     color: rgba(202, 202, 202, 0.75);
     transition: 0.25s ease;
     background: none;

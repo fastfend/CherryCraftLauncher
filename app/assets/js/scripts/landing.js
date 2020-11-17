@@ -3,15 +3,19 @@
  */
 // Requirements
 const cp                      = require('child_process')
+const sudo                    = require('sudo-prompt');
 const crypto                  = require('crypto')
 const {URL}                   = require('url')
-
+const fs                      = require('fs')
+const { spawnSync }           = require('child_process')
+const http                    = require('http')
+const progress                = require('request-progress')
 // Internal Requirements
 const DiscordWrapper          = require('./assets/js/discordwrapper')
 const Mojang                  = require('./assets/js/mojang')
 const ProcessBuilder          = require('./assets/js/processbuilder')
 const ServerStatus            = require('./assets/js/serverstatus')
-
+const request                 = require('request');
 // Launch Elements
 const launch_content          = document.getElementById('launch_content')
 const launch_details          = document.getElementById('launch_details')
@@ -83,43 +87,179 @@ function setLaunchEnabled(val){
     document.getElementById('launch_button').disabled = !val
 }
 
-// Bind launch button
-document.getElementById('launch_button').addEventListener('click', function(e){
-    loggerLanding.log('Launching game..')
-    const mcVersion = DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer()).getMinecraftVersion()
-    const jExe = ConfigManager.getJavaExecutable()
-    if(jExe == null){
-        asyncSystemScan(mcVersion)
-    } else {
 
-        setLaunchDetails(Lang.queryJS('landing.launch.pleaseWait'))
+
+
+function checkOpenAL()
+{
+    var letter = showLetter();
+    const path = letter + '\\System32\\OpenAL32.dll'
+
+    try {
+      if (fs.existsSync(path)) {
+        return true;
+      }
+    } catch(err) {
+      console.error(err)
+    }
+    return false;
+}
+
+function showLetter()
+{
+    var data = null;
+    try
+    {
+        const child = spawnSync('cmd.exe', ['/c', 'echo', '%WINDIR%']);
+        data = child.stdout.toString();
+        data = data.replace(/(?:\\[rn]|[\r\n]+)+/g, "");
+    }
+    catch (e)
+    {
+        return null;
+    }
+    return data;
+}
+
+function installOpenAL()
+{
+    setOverlayContent(
+        'Nie wykryto odpowiedniej<br>instalacji OpenAL',
+        'Launcher zainstaluje OpenAL za Ciebie, pamiętaj by zgodzić się na instalację OpenAL!',
+        'OK',
+    )
+    setOverlayHandler(() => {
+        setLaunchDetails('Pobieranie OpenAL...')
+        toggleOverlay(false)
         toggleLaunchArea(true)
         setLaunchPercentage(0, 100)
 
-        const jg = new JavaGuard(mcVersion)
-        jg._validateJavaBinary(jExe).then((v) => {
-            loggerLanding.log('Java version meta', v)
-            if(v.valid){
-                dlAsync()
-            } else {
-                asyncSystemScan(mcVersion)
+        var path = ConfigManager.getDataDirectory() + "\\openal.exe";
+        loggerLanding.log('Downloading into: ' + path)
+        const file = fs.createWriteStream(path);
+        const sendReq = request.get("https://updates.hqcraft.pl/mcdata/libs/openal.exe");
+
+        sendReq.on('response', (response) => {
+            if (response.statusCode !== 200) {
+                loggerLanding.log('error' + response,toString())
+                showLaunchFailure("Błąd podczas pobierania OpenAL", "Nie udało się pobrać OpenAL. Spróbuj ponownie jeszcze raz lub zainstaluj <a href=\"https://updates.hqcraft.pl/mcdata/libs/openal.exe\">ręcznie</a>")
             }
-        })
+            else
+            {
+                sendReq.pipe(file);
+            }
+
+        });
+    
+        file.on('finish', () => 
+        {
+            setLaunchPercentage(100, 100)
+            setLaunchDetails('Instalacja OpenAL...')
+
+            
+            var options = {
+              name: 'HQCraft Launcher'
+            };
+            sudo.exec(path + " /SILENT", options,
+              function(error, stdout, stderr) {
+                if(checkOpenAL())
+                {
+                    const mcVersion = DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer()).getMinecraftVersion()
+                    const jExe = ConfigManager.getJavaExecutable()
+                    if(jExe == null){
+                        asyncSystemScan(mcVersion)
+                    } else {
+                
+                        setLaunchDetails(Lang.queryJS('landing.launch.pleaseWait'))
+                        toggleLaunchArea(true)
+                        setLaunchPercentage(0, 100)
+                
+                        const jg = new JavaGuard(mcVersion)
+                        jg._validateJavaBinary(jExe).then((v) => {
+                            loggerLanding.log('Java version meta', v)
+                            if(v.valid){
+                                dlAsync()
+                            } else {
+                                asyncSystemScan(mcVersion)
+                            }
+                        })
+                    }
+                }
+                else
+                {
+                    showLaunchFailure("Błąd podczas instalacji OpenAL", "Nie udało się zainstlować OpenAL. Spróbuj ponownie jeszcze raz lub zainstaluj <a href=\"https://updates.hqcraft.pl/mcdata/libs/openal.exe\">ręcznie</a>")
+                    if (error)
+                    {
+                        loggerLanding.log(error.toString())
+                    }
+                    else
+                    {
+                        loggerLanding.log('????')        
+                    }
+                }
+              }
+            );
+        });
+    
+        // check for request errors
+        sendReq.on('error', (err) => {
+            fs.unlink(dest);
+            //wywal
+            loggerLanding.log('error' + err.toString())
+            showLaunchFailure("Błąd podczas pobierania OpenAL", "Nie udało się pobrać OpenAL. Spróbuj ponownie jeszcze raz lub zainstaluj <a href=\"https://updates.hqcraft.pl/mcdata/libs/openal.exe\">ręcznie</a>")
+        });
+    
+        file.on('error', (err) => { // Handle errors
+            fs.unlink(dest); // Delete the file async. (But we don't check the result)
+            //wywal
+            loggerLanding.log('error' + err.toString())
+            showLaunchFailure("Błąd podczas pobierania OpenAL", "Nie udało się pobrać OpenAL. Spróbuj ponownie jeszcze raz lub zainstaluj <a href=\"https://updates.hqcraft.pl/mcdata/libs/openal.exe\">ręcznie</a>")
+        });
+    })
+    toggleOverlay(true)
+}
+
+// Bind launch button
+document.getElementById('launch_button').addEventListener('click', function(e){
+    loggerLanding.log('Launching game..')
+    loggerLanding.log('Checking for OpenAL..')
+
+    if(!checkOpenAL())
+    {
+        installOpenAL()
     }
+    else
+    {
+        const mcVersion = DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer()).getMinecraftVersion()
+        const jExe = ConfigManager.getJavaExecutable()
+        if(jExe == null){
+            asyncSystemScan(mcVersion)
+        } else {
+    
+            setLaunchDetails(Lang.queryJS('landing.launch.pleaseWait'))
+            toggleLaunchArea(true)
+            setLaunchPercentage(0, 100)
+    
+            const jg = new JavaGuard(mcVersion)
+            jg._validateJavaBinary(jExe).then((v) => {
+                loggerLanding.log('Java version meta', v)
+                if(v.valid){
+                    dlAsync()
+                } else {
+                    asyncSystemScan(mcVersion)
+                }
+            })
+        }
+    }
+    //download https://updates.hqcraft.pl/mcdata/libs/openal.exe
+
+
 })
 
 // Bind settings button
 document.getElementById('settingsMediaButton').onclick = (e) => {
     prepareSettings()
     switchView(getCurrentView(), VIEWS.settings)
-}
-
-// Bind avatar overlay button.
-document.getElementById('avatarOverlay').onclick = (e) => {
-    prepareSettings()
-    switchView(getCurrentView(), VIEWS.settings, 500, 500, () => {
-        settingsNavItemListener(document.getElementById('settingsNavAccount'), false)
-    })
 }
 
 // Bind selected account
@@ -130,7 +270,7 @@ function updateSelectedAccount(authUser){
             username = authUser.displayName
         }
         if(authUser.uuid != null){
-            document.getElementById('avatarContainer').style.backgroundImage = `url('https://crafatar.com/renders/body/${authUser.uuid}')`
+            document.getElementById('avatarContainer').style.backgroundImage = `url('https://crafatar.com/avatars/${authUser.uuid}')`
         }
     }
     user_text.innerHTML = username
@@ -144,116 +284,61 @@ function updateSelectedServer(serv){
     }
     ConfigManager.setSelectedServer(serv != null ? serv.getID() : null)
     ConfigManager.save()
-    server_selection_button.innerHTML = '\u2022 ' + (serv != null ? serv.getName() : 'No Server Selected')
+    server_selection_button.innerHTML = '\u2022 ' + (serv != null ? serv.getName() : 'Brak wybranej wersji')
     if(getCurrentView() === VIEWS.settings){
         animateModsTabRefresh()
     }
     setLaunchEnabled(serv != null)
 }
 // Real text is set in uibinder.js on distributionIndexDone.
-server_selection_button.innerHTML = '\u2022 Loading..'
+server_selection_button.innerHTML = '\u2022 Ładowanie..'
 server_selection_button.onclick = (e) => {
     e.target.blur()
     toggleServerSelection(true)
-}
-
-// Update Mojang Status Color
-const refreshMojangStatuses = async function(){
-    loggerLanding.log('Refreshing Mojang Statuses..')
-
-    let status = 'grey'
-    let tooltipEssentialHTML = ''
-    let tooltipNonEssentialHTML = ''
-
-    try {
-        const statuses = await Mojang.status()
-        greenCount = 0
-        greyCount = 0
-
-        for(let i=0; i<statuses.length; i++){
-            const service = statuses[i]
-
-            if(service.essential){
-                tooltipEssentialHTML += `<div class="mojangStatusContainer">
-                    <span class="mojangStatusIcon" style="color: ${Mojang.statusToHex(service.status)};">&#8226;</span>
-                    <span class="mojangStatusName">${service.name}</span>
-                </div>`
-            } else {
-                tooltipNonEssentialHTML += `<div class="mojangStatusContainer">
-                    <span class="mojangStatusIcon" style="color: ${Mojang.statusToHex(service.status)};">&#8226;</span>
-                    <span class="mojangStatusName">${service.name}</span>
-                </div>`
-            }
-
-            if(service.status === 'yellow' && status !== 'red'){
-                status = 'yellow'
-            } else if(service.status === 'red'){
-                status = 'red'
-            } else {
-                if(service.status === 'grey'){
-                    ++greyCount
-                }
-                ++greenCount
-            }
-
-        }
-
-        if(greenCount === statuses.length){
-            if(greyCount === statuses.length){
-                status = 'grey'
-            } else {
-                status = 'green'
-            }
-        }
-
-    } catch (err) {
-        loggerLanding.warn('Unable to refresh Mojang service status.')
-        loggerLanding.debug(err)
-    }
-    
-    document.getElementById('mojangStatusEssentialContainer').innerHTML = tooltipEssentialHTML
-    document.getElementById('mojangStatusNonEssentialContainer').innerHTML = tooltipNonEssentialHTML
-    document.getElementById('mojang_status_icon').style.color = Mojang.statusToHex(status)
 }
 
 const refreshServerStatus = async function(fade = false){
     loggerLanding.log('Refreshing Server Status')
     const serv = DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer())
 
-    let pLabel = 'SERVER'
+    let pLabel = 'SERWER'
     let pVal = 'OFFLINE'
+    const serverURL = new URL('my://' + serv.getAddress())
+    let options = {json: true};
 
-    try {
-        const serverURL = new URL('my://' + serv.getAddress())
-        const servStat = await ServerStatus.getStatus(serverURL.hostname, serverURL.port)
-        if(servStat.online){
-            pLabel = 'PLAYERS'
-            pVal = servStat.onlinePlayers + '/' + servStat.maxPlayers
+    request("https://api.mcsrvstat.us/2/" + serverURL.hostname, options, (error, res, body) => {
+        if (error) {
+            loggerLanding.warn('Unable to refresh server status, assuming offline.')
+            loggerLanding.log(err)
+        }
+    
+        if (!error && res.statusCode == 200) {
+            loggerLanding.log(body)
+            if(body.online)
+            {
+                pLabel = 'GRACZY'
+                pVal = body.players.online.toString() + '/' + body.players.max.toString()
+                loggerLanding.log(pLabel)
+                loggerLanding.log(pVal)
+            }
         }
 
-    } catch (err) {
-        loggerLanding.warn('Unable to refresh server status, assuming offline.')
-        loggerLanding.debug(err)
-    }
-    if(fade){
-        $('#server_status_wrapper').fadeOut(250, () => {
+        if(fade){
+            $('#server_status_wrapper').fadeOut(250, () => {
+                document.getElementById('landingPlayerLabel').innerHTML = pLabel
+                document.getElementById('player_count').innerHTML = pVal
+                $('#server_status_wrapper').fadeIn(500)
+            })
+        } else {
             document.getElementById('landingPlayerLabel').innerHTML = pLabel
             document.getElementById('player_count').innerHTML = pVal
-            $('#server_status_wrapper').fadeIn(500)
-        })
-    } else {
-        document.getElementById('landingPlayerLabel').innerHTML = pLabel
-        document.getElementById('player_count').innerHTML = pVal
-    }
-    
+        }
+    });
 }
-
-refreshMojangStatuses()
 // Server Status is refreshed in uibinder.js on distributionIndexDone.
 
-// Set refresh rate to once every 5 minutes.
-let mojangStatusListener = setInterval(() => refreshMojangStatuses(true), 300000)
-let serverStatusListener = setInterval(() => refreshServerStatus(true), 300000)
+// Set refresh rate to once every 2 minutes.
+let serverStatusListener = setInterval(() => refreshServerStatus(true), 120000)
 
 /**
  * Shows an error overlay, toggles off the launch area.
@@ -265,7 +350,7 @@ function showLaunchFailure(title, desc){
     setOverlayContent(
         title,
         desc,
-        'Okay'
+        'OK'
     )
     setOverlayHandler(null)
     toggleOverlay(true)
@@ -274,7 +359,7 @@ function showLaunchFailure(title, desc){
 
 /* System (Java) Scan */
 
-let sysAEx
+var sysAEx
 let scanAt
 
 let extractListener
@@ -287,7 +372,7 @@ let extractListener
  */
 function asyncSystemScan(mcVersion, launchAfter = true){
 
-    setLaunchDetails('Please wait..')
+    setLaunchDetails('Proszę czekać...')
     toggleLaunchArea(true)
     setLaunchPercentage(0, 100)
 
@@ -322,13 +407,13 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                 // If the result is null, no valid Java installation was found.
                 // Show this information to the user.
                 setOverlayContent(
-                    'No Compatible<br>Java Installation Found',
-                    'In order to join WesterosCraft, you need a 64-bit installation of Java 8. Would you like us to install a copy? By installing, you accept <a href="http://www.oracle.com/technetwork/java/javase/terms/license/index.html">Oracle\'s license agreement</a>.',
-                    'Install Java',
-                    'Install Manually'
+                    'Nie wykryto odpowiedniej<br>instalacji Javy',
+                    'Aby móc grać w HQ Craft, potrzebujesz Java 8 w wersji 64 bit. Czy zainstalować Javę za Ciebie? Instalując akceptujesz <a href="http://www.oracle.com/technetwork/java/javase/terms/license/index.html">licencję Oracle</a>.',
+                    'Zainstaluj za mnie',
+                    'Zainstaluję ręczne'
                 )
                 setOverlayHandler(() => {
-                    setLaunchDetails('Preparing Java Download..')
+                    setLaunchDetails('Przygotowanie do pobrania Javy..')
                     sysAEx.send({task: 'changeContext', class: 'AssetGuard', args: [ConfigManager.getCommonDirectory(),ConfigManager.getJavaExecutable()]})
                     sysAEx.send({task: 'execute', function: '_enqueueOpenJDK', argsArr: [ConfigManager.getDataDirectory()]})
                     toggleOverlay(false)
@@ -337,10 +422,10 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                     $('#overlayContent').fadeOut(250, () => {
                         //$('#overlayDismiss').toggle(false)
                         setOverlayContent(
-                            'Java is Required<br>to Launch',
-                            'A valid x64 installation of Java 8 is required to launch.<br><br>Please refer to our <a href="https://github.com/dscalzi/HeliosLauncher/wiki/Java-Management#manually-installing-a-valid-version-of-java">Java Management Guide</a> for instructions on how to manually install Java.',
-                            'I Understand',
-                            'Go Back'
+                            'Java jest wymagana<br>do uruchomienia',
+                            'Prawidłowa instalcja Java 8 w wersji 64 bit jest wymagana do uruchomienia HQCraft.',
+                            'OK',
+                            'Powrót'
                         )
                         setOverlayHandler(() => {
                             toggleLaunchArea(false)
@@ -375,7 +460,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
             if(m.result === true){
 
                 // Oracle JRE enqueued successfully, begin download.
-                setLaunchDetails('Downloading Java..')
+                setLaunchDetails('Pobieranie Javy..')
                 sysAEx.send({task: 'execute', function: 'processDlQueues', argsArr: [[{id:'java', limit:1}]]})
 
             } else {
@@ -383,9 +468,9 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                 // Oracle JRE enqueue failed. Probably due to a change in their website format.
                 // User will have to follow the guide to install Java.
                 setOverlayContent(
-                    'Unexpected Issue:<br>Java Download Failed',
-                    'Unfortunately we\'ve encountered an issue while attempting to install Java. You will need to manually install a copy. Please check out our <a href="https://github.com/dscalzi/HeliosLauncher/wiki">Troubleshooting Guide</a> for more details and instructions.',
-                    'I Understand'
+                    'Nieoczekiwany błąd:<br>Błąd pobierania Javy',
+                    'Nie udało się pobrać Javy, spróbuj ponownie lub zainstaluj Javę ręcznie',
+                    'OK'
                 )
                 setOverlayHandler(() => {
                     toggleOverlay(false)
@@ -413,7 +498,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                     remote.getCurrentWindow().setProgressBar(2)
 
                     // Wait for extration to complete.
-                    const eLStr = 'Extracting'
+                    const eLStr = 'Wypakowywanie'
                     let dotStr = ''
                     setLaunchDetails(eLStr)
                     extractListener = setInterval(() => {
@@ -439,7 +524,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                         extractListener = null
                     }
 
-                    setLaunchDetails('Java Installed!')
+                    setLaunchDetails('Pomyślnie zainstalowano Javę!')
 
                     if(launchAfter){
                         dlAsync()
@@ -455,7 +540,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
     })
 
     // Begin system Java scan.
-    setLaunchDetails('Checking system info..')
+    setLaunchDetails('Sprawdzam informacje o systemie..')
     sysAEx.send({task: 'execute', function: 'validateJava', argsArr: [ConfigManager.getDataDirectory()]})
 
 }
@@ -488,7 +573,7 @@ function dlAsync(login = true){
         }
     }
 
-    setLaunchDetails('Please wait..')
+    setLaunchDetails('Proszę czekać..')
     toggleLaunchArea(true)
     setLaunchPercentage(0, 100)
 
@@ -519,12 +604,12 @@ function dlAsync(login = true){
     })
     aEx.on('error', (err) => {
         loggerLaunchSuite.error('Error during launch', err)
-        showLaunchFailure('Error During Launch', err.message || 'See console (CTRL + Shift + i) for more details.')
+        showLaunchFailure('Wystąpił błąd podczas uruchamiania gry', err.message || 'Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.')
     })
     aEx.on('close', (code, signal) => {
         if(code !== 0){
             loggerLaunchSuite.error(`AssetExec exited with code ${code}, assuming error.`)
-            showLaunchFailure('Error During Launch', 'See console (CTRL + Shift + i) for more details.')
+            showLaunchFailure('Wystąpił błąd podczas uruchamiania gry', 'Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.')
         }
     })
 
@@ -536,27 +621,27 @@ function dlAsync(login = true){
                 case 'distribution':
                     setLaunchPercentage(20, 100)
                     loggerLaunchSuite.log('Validated distibution index.')
-                    setLaunchDetails('Loading version information..')
+                    setLaunchDetails('Pobieram informacje o wersji..')
                     break
                 case 'version':
                     setLaunchPercentage(40, 100)
                     loggerLaunchSuite.log('Version data loaded.')
-                    setLaunchDetails('Validating asset integrity..')
+                    setLaunchDetails('Sprawdzam zgodność assetów..')
                     break
                 case 'assets':
                     setLaunchPercentage(60, 100)
                     loggerLaunchSuite.log('Asset Validation Complete')
-                    setLaunchDetails('Validating library integrity..')
+                    setLaunchDetails('Sprawdzam zgodność bibliotek..')
                     break
                 case 'libraries':
                     setLaunchPercentage(80, 100)
                     loggerLaunchSuite.log('Library validation complete.')
-                    setLaunchDetails('Validating miscellaneous file integrity..')
+                    setLaunchDetails('Sprawdzam zgodność plików dodatkowych..')
                     break
                 case 'files':
                     setLaunchPercentage(100, 100)
                     loggerLaunchSuite.log('File validation complete.')
-                    setLaunchDetails('Downloading files..')
+                    setLaunchDetails('Pobieranie plików..')
                     break
             }
         } else if(m.context === 'progress'){
@@ -574,7 +659,7 @@ function dlAsync(login = true){
                     remote.getCurrentWindow().setProgressBar(2)
 
                     // Download done, extracting.
-                    const eLStr = 'Extracting libraries'
+                    const eLStr = 'Wypakowywanie bibliotek'
                     let dotStr = ''
                     setLaunchDetails(eLStr)
                     progressListener = setInterval(() => {
@@ -598,7 +683,7 @@ function dlAsync(login = true){
                         progressListener = null
                     }
 
-                    setLaunchDetails('Preparing to launch..')
+                    setLaunchDetails('Przygotowywanie do uruchomienia..')
                     break
             }
         } else if(m.context === 'error'){
@@ -608,13 +693,13 @@ function dlAsync(login = true){
                     
                     if(m.error.code === 'ENOENT'){
                         showLaunchFailure(
-                            'Download Error',
-                            'Could not connect to the file server. Ensure that you are connected to the internet and try again.'
+                            'Błąd pobierania',
+                            'Nie udało się podłączyć do serwera danych HQ. Sprawdź stan swojego połączenia internetowego.'
                         )
                     } else {
                         showLaunchFailure(
-                            'Download Error',
-                            'Check the console (CTRL + Shift + i) for more details. Please try again.'
+                            'Błąd pobierania',
+                            'Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.'
                         )
                     }
 
@@ -633,7 +718,7 @@ function dlAsync(login = true){
                 loggerLaunchSuite.error('Error during validation:', m.result)
 
                 loggerLaunchSuite.error('Error during launch', m.result.error)
-                showLaunchFailure('Error During Launch', 'Please check the console (CTRL + Shift + i) for more details.')
+                showLaunchFailure('Błąd weryfikacji plików', 'Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.')
 
                 allGood = false
             }
@@ -645,7 +730,7 @@ function dlAsync(login = true){
                 const authUser = ConfigManager.getSelectedAccount()
                 loggerLaunchSuite.log(`Sending selected account (${authUser.displayName}) to ProcessBuilder.`)
                 let pb = new ProcessBuilder(serv, versionData, forgeData, authUser, remote.app.getVersion())
-                setLaunchDetails('Launching game..')
+                setLaunchDetails('Uruchamianie..')
 
                 // Attach a temporary listener to the client output.
                 // Will wait for a certain bit of text meaning that
@@ -655,7 +740,7 @@ function dlAsync(login = true){
                     if(GAME_LAUNCH_REGEX.test(data.trim())){
                         toggleLaunchArea(false)
                         if(hasRPC){
-                            DiscordWrapper.updateDetails('Loading game..')
+                            DiscordWrapper.updateDetails('Ładowanie gry..')
                         }
                         proc.stdout.on('data', gameStateChange)
                         proc.stdout.removeListener('data', tempListener)
@@ -667,9 +752,9 @@ function dlAsync(login = true){
                 const gameStateChange = function(data){
                     data = data.trim()
                     if(SERVER_JOINED_REGEX.test(data)){
-                        DiscordWrapper.updateDetails('Exploring the Realm!')
+                        DiscordWrapper.updateDetails('Na serwerze!')
                     } else if(GAME_JOINED_REGEX.test(data)){
-                        DiscordWrapper.updateDetails('Sailing to Westeros!')
+                        DiscordWrapper.updateDetails('W menu!')
                     }
                 }
 
@@ -677,7 +762,7 @@ function dlAsync(login = true){
                     data = data.trim()
                     if(data.indexOf('Could not find or load main class net.minecraft.launchwrapper.Launch') > -1){
                         loggerLaunchSuite.error('Game launch failed, LaunchWrapper was not downloaded properly.')
-                        showLaunchFailure('Error During Launch', 'The main file, LaunchWrapper, failed to download properly. As a result, the game cannot launch.<br><br>To fix this issue, temporarily turn off your antivirus software and launch the game again.<br><br>If you have time, please <a href="https://github.com/dscalzi/HeliosLauncher/issues">submit an issue</a> and let us know what antivirus software you use. We\'ll contact them and try to straighten things out.')
+                        showLaunchFailure('Błąd podczas uruchamiania', 'Główny plik, LaunchWrapper, nie został pobrany. Z tego powodu gra nie może się uruchomić.<br><br>Aby naprawić ten błąd, tymczasowo wyłącz antywirusa i spróbuj ponownie.')
                     }
                 }
 
@@ -689,7 +774,7 @@ function dlAsync(login = true){
                     proc.stdout.on('data', tempListener)
                     proc.stderr.on('data', gameErrorListener)
 
-                    setLaunchDetails('Done. Enjoy the server!')
+                    setLaunchDetails('Powodzenie. Miłej gry!')
 
                     // Init Discord Hook
                     const distro = DistroManager.getDistribution()
@@ -707,7 +792,7 @@ function dlAsync(login = true){
                 } catch(err) {
 
                     loggerLaunchSuite.error('Error during launch', err)
-                    showLaunchFailure('Error During Launch', 'Please check the console (CTRL + Shift + i) for more details.')
+                    showLaunchFailure('Błąd podczas uruchamiania', 'Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.')
 
                 }
             }
@@ -721,7 +806,7 @@ function dlAsync(login = true){
     // Begin Validations
 
     // Validate Forge files.
-    setLaunchDetails('Loading server information..')
+    setLaunchDetails('Pobieranie informacji o wersji..')
 
     refreshDistributionIndex(true, (data) => {
         onDistroRefresh(data)
@@ -736,7 +821,7 @@ function dlAsync(login = true){
         }, (err) => {
             loggerLaunchSuite.error('Unable to refresh distribution index.', err)
             if(DistroManager.getDistribution() == null){
-                showLaunchFailure('Fatal Error', 'Could not load a copy of the distribution index. See the console (CTRL + Shift + i) for more details.')
+                showLaunchFailure('Błąd krytyczny', 'Nie udało się pobrać pliku dystrybucji. Zobacz konsolę (CTRL + Shift + i) by dowiedzieć się wiecej.')
 
                 // Disconnect from AssetExec
                 aEx.disconnect()
@@ -848,7 +933,7 @@ let newsLoadingListener = null
  */
 function setNewsLoading(val){
     if(val){
-        const nLStr = 'Checking for News'
+        const nLStr = 'Sprawdzam wiadomości'
         let dotStr = '..'
         nELoadSpan.innerHTML = nLStr + dotStr
         newsLoadingListener = setInterval(() => {
@@ -1052,10 +1137,7 @@ document.addEventListener('keydown', (e) => {
 function displayArticle(articleObject, index){
     newsArticleTitle.innerHTML = articleObject.title
     newsArticleTitle.href = articleObject.link
-    newsArticleAuthor.innerHTML = 'by ' + articleObject.author
     newsArticleDate.innerHTML = articleObject.date
-    newsArticleComments.innerHTML = articleObject.comments
-    newsArticleComments.href = articleObject.commentsLink
     newsArticleContentScrollable.innerHTML = '<div id="newsArticleContentWrapper"><div class="newsArticleSpacerTop"></div>' + articleObject.content + '<div class="newsArticleSpacerBot"></div></div>'
     Array.from(newsArticleContentScrollable.getElementsByClassName('bbCodeSpoilerButton')).forEach(v => {
         v.onclick = () => {
@@ -1063,7 +1145,7 @@ function displayArticle(articleObject, index){
             text.style.display = text.style.display === 'block' ? 'none' : 'block'
         }
     })
-    newsNavigationStatus.innerHTML = index + ' of ' + newsArr.length
+    newsNavigationStatus.innerHTML = index + ' z ' + newsArr.length
     newsContent.setAttribute('article', index-1)
 }
 
@@ -1088,19 +1170,15 @@ function loadNews(){
                         const el = $(items[i])
 
                         // Resolve date.
-                        const date = new Date(el.find('pubDate').text()).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'})
-
-                        // Resolve comments.
-                        let comments = el.find('slash\\:comments').text() || '0'
-                        comments = comments + ' Comment' + (comments === '1' ? '' : 's')
+                        const date = new Date(el.find('pubDate').text()).toLocaleDateString('pl-PL', {day: 'numeric', month: 'short',  year: 'numeric'})
 
                         // Fix relative links in content.
-                        let content = el.find('content\\:encoded').text()
+                        let content = el.find('description').text()
                         let regex = /src="(?!http:\/\/|https:\/\/)(.+?)"/g
-                        let matches
-                        while((matches = regex.exec(content))){
-                            content = content.replace(`"${matches[1]}"`, `"${newsHost + matches[1]}"`)
-                        }
+                        //let matches
+                        //while((matches = regex.exec(content))){
+                        //    content = content.replace(`"${matches[1]}"`, `"${newsHost + matches[1]}"`)
+                        //}
 
                         let link   = el.find('link').text()
                         let title  = el.find('title').text()
@@ -1113,9 +1191,7 @@ function loadNews(){
                                 title,
                                 date,
                                 author,
-                                content,
-                                comments,
-                                commentsLink: link + '#comments'
+                                content
                             }
                         )
                     }

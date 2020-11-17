@@ -13,8 +13,10 @@ const loginEmailError       = document.getElementById('loginEmailError')
 const loginUsername         = document.getElementById('loginUsername')
 const loginPasswordError    = document.getElementById('loginPasswordError')
 const loginPassword         = document.getElementById('loginPassword')
+const loginPasswordBox      = document.getElementById('paswordboxl')
 const checkmarkContainer    = document.getElementById('checkmarkContainer')
 const loginRememberOption   = document.getElementById('loginRememberOption')
+const loginNonpremiumOption = document.getElementById('loginNonpremiumOption')
 const loginButton           = document.getElementById('loginButton')
 const loginForm             = document.getElementById('loginForm')
 
@@ -109,6 +111,26 @@ loginUsername.addEventListener('input', (e) => {
 loginPassword.addEventListener('input', (e) => {
     validatePassword(e.target.value)
 })
+
+loginNonpremiumOption.addEventListener( 'change', function() {
+    if(this.checked) {
+        // Checkbox is checked..
+        loginPassword.disabled = true
+        loginPassword.value = ""
+        loginPasswordBox.style.visibility = "hidden"
+        loginPasswordBox.style.position = "fixed"
+        lp = true
+    } else {
+        // Checkbox is not checked..
+        loginPassword.disabled = false
+        loginPassword.value = ""
+        loginPasswordBox.style.visibility = "visible"
+        loginPasswordBox.style.position = "relative"
+        lp = false
+    }
+});
+
+
 
 /**
  * Enable or disable the login button.
@@ -262,39 +284,78 @@ loginButton.addEventListener('click', () => {
     // Show loading stuff.
     loginLoading(true)
 
-    AuthManager.addAccount(loginUsername.value, loginPassword.value).then((value) => {
-        updateSelectedAccount(value)
-        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn'), Lang.queryJS('login.success'))
-        $('.circle-loader').toggleClass('load-complete')
-        $('.checkmark').toggle()
-        setTimeout(() => {
-            switchView(VIEWS.login, loginViewOnSuccess, 500, 500, () => {
-                // Temporary workaround
-                if(loginViewOnSuccess === VIEWS.settings){
-                    prepareSettings()
-                }
-                loginViewOnSuccess = VIEWS.landing // Reset this for good measure.
-                loginCancelEnabled(false) // Reset this for good measure.
-                loginViewCancelHandler = null // Reset this for good measure.
-                loginUsername.value = ''
-                loginPassword.value = ''
-                $('.circle-loader').toggleClass('load-complete')
-                $('.checkmark').toggle()
-                loginLoading(false)
-                loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.success'), Lang.queryJS('login.login'))
+    if(loginNonpremiumOption.checked == true)
+    {
+        AuthManager.addNonpremiumAccount(loginUsername.value).then((value) => {
+            updateSelectedAccount(value)
+            loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn'), Lang.queryJS('login.success'))
+            $('.circle-loader').toggleClass('load-complete')
+            $('.checkmark').toggle()
+            setTimeout(() => {
+                switchView(VIEWS.login, loginViewOnSuccess, 500, 500, () => {
+                    // Temporary workaround
+                    if(loginViewOnSuccess === VIEWS.settings){
+                        prepareSettings()
+                    }
+                    loginViewOnSuccess = VIEWS.landing // Reset this for good measure.
+                    loginCancelEnabled(false) // Reset this for good measure.
+                    loginViewCancelHandler = null // Reset this for good measure.
+                    loginUsername.value = ''
+                    loginPassword.value = ''
+                    $('.circle-loader').toggleClass('load-complete')
+                    $('.checkmark').toggle()
+                    loginLoading(false)
+                    loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.success'), Lang.queryJS('login.login'))
+                    formDisabled(false)
+                })
+            }, 1000)
+        }).catch((err) => {
+            loginLoading(false)
+            const errF = resolveError(err)
+            setOverlayContent(errF.title, errF.desc, Lang.queryJS('login.tryAgain'))
+            setOverlayHandler(() => {
                 formDisabled(false)
+                toggleOverlay(false)
             })
-        }, 1000)
-    }).catch((err) => {
-        loginLoading(false)
-        const errF = resolveError(err)
-        setOverlayContent(errF.title, errF.desc, Lang.queryJS('login.tryAgain'))
-        setOverlayHandler(() => {
-            formDisabled(false)
-            toggleOverlay(false)
+            toggleOverlay(true)
+            loggerLogin.log('Error while logging in.', err)
         })
-        toggleOverlay(true)
-        loggerLogin.log('Error while logging in.', err)
-    })
-
+    }
+    else
+    {
+        AuthManager.addAccount(loginUsername.value, loginPassword.value).then((value) => {
+            updateSelectedAccount(value)
+            loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn'), Lang.queryJS('login.success'))
+            $('.circle-loader').toggleClass('load-complete')
+            $('.checkmark').toggle()
+            setTimeout(() => {
+                switchView(VIEWS.login, loginViewOnSuccess, 500, 500, () => {
+                    // Temporary workaround
+                    if(loginViewOnSuccess === VIEWS.settings){
+                        prepareSettings()
+                    }
+                    loginViewOnSuccess = VIEWS.landing // Reset this for good measure.
+                    loginCancelEnabled(false) // Reset this for good measure.
+                    loginViewCancelHandler = null // Reset this for good measure.
+                    loginUsername.value = ''
+                    loginPassword.value = ''
+                    $('.circle-loader').toggleClass('load-complete')
+                    $('.checkmark').toggle()
+                    loginLoading(false)
+                    loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.success'), Lang.queryJS('login.login'))
+                    formDisabled(false)
+                })
+            }, 1000)
+        }).catch((err) => {
+            loginLoading(false)
+            const errF = resolveError(err)
+            setOverlayContent(errF.title, errF.desc, Lang.queryJS('login.tryAgain'))
+            setOverlayHandler(() => {
+                formDisabled(false)
+                toggleOverlay(false)
+            })
+            toggleOverlay(true)
+            loggerLogin.log('Error while logging in.', err)
+        })
+    }
 })

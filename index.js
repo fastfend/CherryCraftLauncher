@@ -21,7 +21,9 @@ function initAutoUpdater(event, data) {
     
     if(isDev){
         autoUpdater.autoInstallOnAppQuit = false
-        autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
+
+        //autoUpdater.setFeedURL(feed)    
+        //autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
     }
     if(process.platform === 'darwin'){
         autoUpdater.autoDownload = false
@@ -61,7 +63,6 @@ ipcMain.on('autoUpdateAction', (event, arg, data) => {
             if(!data){
                 const preRelComp = semver.prerelease(app.getVersion())
                 if(preRelComp != null && preRelComp.length > 0){
-                    autoUpdater.allowPrerelease = true
                 } else {
                     autoUpdater.allowPrerelease = data
                 }
@@ -94,8 +95,10 @@ function createWindow() {
 
     win = new BrowserWindow({
         width: 980,
-        height: 552,
-        icon: getPlatformIcon('SealCircle'),
+        height: 650,
+        minHeight: 650,
+        minWidth: 980,
+        icon: getPlatformIcon('favicon'),
         frame: false,
         webPreferences: {
             preload: path.join(__dirname, 'app', 'assets', 'js', 'preloader.js'),
